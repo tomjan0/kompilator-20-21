@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "values.hpp"
+#include "values/values.hpp"
 #include "compiler.hpp"
 #include "parser.h"
 

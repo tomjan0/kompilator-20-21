@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "symbols.hpp"
-#include "values.hpp"
+#include "utils/utils.hpp"
+#include "values/values.hpp"
 
 using namespace std;
 
+
+void test();
 void read(Value* value);
 void write(Value* value);
 void printCommands();

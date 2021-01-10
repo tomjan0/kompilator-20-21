@@ -3,57 +3,161 @@
 vector<string> commands;
 string output_filename;
 ofstream file;
+bool debug = true;
+
+void test() {}
 
 void set_output_filename(char* filename) { output_filename = filename; }
 
 void open_file() { file.open(output_filename); }
 
-vector<string> generateNumberInRegister(long number, string reg) {
-    vector<string> res;
-    res.push_back("RESET " + reg);
-    for (int i = 0; i < number; i++) {
-        res.push_back("INC " + reg);
+vector<string> generateNumberInRegister(long number, Register reg) {
+    vector<string> genInstructions;
+
+    genInstructions.push_back(Instructions::RESET(reg));
+    if (number > 0) {
+        string binString = decToBin(number);
+        for (long i = 0; i < binString.length() - 1; i++) {
+            char curr = binString.at(i);
+            if (curr == '1') {
+                genInstructions.push_back(Instructions::INC(reg));
+            }
+            genInstructions.push_back(Instructions::SHL(reg));
+        }
+        if (binString.back() == '1') {
+            genInstructions.push_back(Instructions::INC(reg));
+        }
     }
-    return res;
+    return genInstructions;
+}
+
+vector<string> dynamicArrayPositionToRegister(ArrayVariable* array,
+                                              ValueVariable* index,
+                                              Register reg) {
+    vector<string> instructions;
+    vector<string> genIndexMem = generateNumberInRegister(index->memoryId, reg);
+    vector<string> genArrayMem =
+        generateNumberInRegister(array->memoryId, Registers::E);
+    vector<string> genArrayStart =
+        generateNumberInRegister(array->startId, Registers::F);
+
+    concatStringsVectors(&instructions, &genIndexMem);
+    concatStringsVectors(&instructions, &genArrayMem);
+    concatStringsVectors(&instructions, &genArrayStart);
+    instructions.push_back(Instructions::LOAD(reg, reg));
+    instructions.push_back(Instructions::ADD(reg, Registers::E));
+    instructions.push_back(Instructions::SUB(reg, Registers::F));
+
+    return instructions;
+}
+
+vector<string> tempConstToRegister(long value, Register reg) {
+    vector<string> instructions;
+
+    vector<string> genMemoryId =
+        generateNumberInRegister(getSymbolTable()->getTempMemoryId(), reg);
+    vector<string> genValue = generateNumberInRegister(value, Registers::F);
+
+    concatStringsVectors(&instructions, &genMemoryId);
+    concatStringsVectors(&instructions, &genValue);
+    instructions.push_back(Instructions::STORE(Registers::F, reg));
+
+    return instructions;
 }
 
 void read(Value* value) {
-    vector<string> cmds;
-    if (value->type == POINTER) {
-        PointerValue* pvalue = (PointerValue*)value;
-        vector<string> genCmds =
-            generateNumberInRegister(pvalue->variable->memoryId, "a");
-        for (int i = 0; i < genCmds.size(); i++) {
-            cmds.push_back(genCmds.at(i));
+    vector<string> readInstructions;
+    Register mainReg = Registers::A;
+    switch (value->type) {
+        case POINTER: {
+            auto pointerValue = (PointerValue*)value;
+            pointerValue->variable->initialized = true;
+            auto genInstructions = generateNumberInRegister(
+                pointerValue->variable->memoryId, mainReg);
+
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
         }
-        cmds.push_back("GET a");
+        case ARRAY_NUMBER: {
+            auto arrayNumberValue = (ArrayNumberValue*)value;
+            arrayNumberValue->array->initalizeId(arrayNumberValue->index);
+            auto genInstructions = generateNumberInRegister(
+                arrayNumberValue->array->getMemoryId(arrayNumberValue->index),
+                mainReg);
+
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
+        }
+        case ARRAY_POINTER: {
+            auto arrayPointerValue = (ArrayPointerValue*)value;
+            auto genInstructions = dynamicArrayPositionToRegister(
+                arrayPointerValue->array, arrayPointerValue->indexVariable,
+                mainReg);
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
+        }
+        default:
+            break;
     }
 
-    for (int i = 0; i < cmds.size(); i++) {
-        commands.push_back(cmds.at(i));
-    }
+    readInstructions.push_back(Instructions::GET(mainReg));
+    // TODO its only for tests now
+    concatStringsVectors(&commands, &readInstructions);
 }
 
 void write(Value* value) {
-    vector<string> cmds;
-    if (value->type == POINTER) {
-        PointerValue* pvalue = (PointerValue*)value;
-        vector<string> genCmds =
-            generateNumberInRegister(pvalue->variable->memoryId, "a");
-        for (int i = 0; i < genCmds.size(); i++) {
-            cmds.push_back(genCmds.at(i));
+    vector<string> readInstructions;
+    Register mainReg = Registers::A;
+    switch (value->type) {
+        case NUMBER: {
+            auto numberValue = (NumberValue*)value;
+            auto genInstructions =
+                tempConstToRegister(numberValue->number, mainReg);
+
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
         }
-        cmds.push_back("PUT a");
+        case POINTER: {
+            auto pointerValue = (PointerValue*)value;
+            pointerValue->variable->initialized = true;
+            auto genInstructions = generateNumberInRegister(
+                pointerValue->variable->memoryId, mainReg);
+
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
+        }
+        case ARRAY_NUMBER: {
+            auto arrayNumberValue = (ArrayNumberValue*)value;
+            arrayNumberValue->array->initalizeId(arrayNumberValue->index);
+            auto genInstructions = generateNumberInRegister(
+                arrayNumberValue->array->getMemoryId(arrayNumberValue->index),
+                mainReg);
+
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
+        }
+        case ARRAY_POINTER: {
+            auto arrayPointerValue = (ArrayPointerValue*)value;
+            auto genInstructions = dynamicArrayPositionToRegister(
+                arrayPointerValue->array, arrayPointerValue->indexVariable,
+                mainReg);
+            concatStringsVectors(&readInstructions, &genInstructions);
+            break;
+        }
+        default:
+            break;
     }
 
-    for (int i = 0; i < cmds.size(); i++) {
-        commands.push_back(cmds.at(i));
-    }
+    readInstructions.push_back(Instructions::PUT(mainReg));
+    // TODO its only for tests now
+    concatStringsVectors(&commands, &readInstructions);
 }
 
 void printCommands() {
-    for (int i = 0; i < commands.size(); i++) {
-        cout << commands.at(i) << endl;
+    if (debug) {
+        for (int i = 0; i < commands.size(); i++) {
+            cout << commands.at(i) << endl;
+        }
     }
 }
 

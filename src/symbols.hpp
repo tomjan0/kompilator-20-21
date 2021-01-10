@@ -11,9 +11,9 @@ using namespace std;
 void error(string str);
 
 enum SymbolType { VAR, CONST };
-enum VariableType { VAL, ARR };
+enum VariableType { VAL, ARRAY };
 
-/* Record of symbol table. Can be a variable - simple and array or const */
+/* Record of symbol table. Can be a variable or const */
 class Symbol {
    public:
     SymbolType type;
@@ -40,7 +40,23 @@ class ArrayVariable : public Variable {
    public:
     vector<long> initializedIds;
     long length;
-    long startIdx;
+    long startId;
+
+    void initalizeId(long id) {
+        bool initialized = false;
+        for (long i = 0; i < initializedIds.size(); i++) {
+            if (initializedIds.at(i) == id) {
+                initialized = true;
+            }
+        }
+        if (!initialized) {
+            initializedIds.push_back(id);
+        }
+    }
+
+    long getMemoryId(long id) {
+        return memoryId + id - startId;
+    }
 };
 
 /* Holds all registered symbols, both variables and constant values */
@@ -65,16 +81,16 @@ class SymbolTable {
         }
     }
 
-    void addArrayVariable(string identifier, long startIdx, long endIdx) {
+    void addArrayVariable(string identifier, long startId, long endId) {
         if (getSymbolIdx(identifier) == -1) {
-            if (startIdx >= 0 && endIdx >= startIdx) {
+            if (startId >= 0 && endId >= startId) {
                 ArrayVariable* newVar = new ArrayVariable;
                 newVar->type = VAR;
                 newVar->identifier = identifier;
                 newVar->memoryId = occupiedMemory;
-                newVar->startIdx = startIdx;
-                newVar->length = endIdx - startIdx + 1;
-                newVar->varType = ARR;
+                newVar->startId = startId;
+                newVar->length = endId - startId + 1;
+                newVar->varType = ARRAY;
                 records.push_back(newVar);
 
                 occupiedMemory += newVar->length;
@@ -106,11 +122,15 @@ class SymbolTable {
 
     Symbol* getSymbol(string identifier) {
         long id = getSymbolIdx(identifier);
-        return id >= 0 ? records[id] : nullptr;
+        return id >= 0 ? records.at(id) : nullptr;
     }
 
     Variable* getVariable(string identifier) {
-        return reinterpret_cast<Variable*>(getSymbol(identifier));
+        return (Variable*)getSymbol(identifier);
+    }
+
+    long getTempMemoryId() {
+        return occupiedMemory;
     }
 };
 

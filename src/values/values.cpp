@@ -35,13 +35,14 @@ PointerValue *getValue(string identifier) {
 ArrayNumberValue *getValue(string identifier, long index) {
     if (getSymbolTable()->variableDeclared(identifier)) {
         Variable *variable = getSymbolTable()->getVariable(identifier);
-        if (variable->varType == ARR) {
+        if (variable->varType == ARRAY) {
             ArrayVariable *array = (ArrayVariable *)variable;
-            if (index >= array->startIdx &&
-                index <= array->startIdx + array->length - 1) {
+            if (index >= array->startId &&
+                index <= array->startId + array->length - 1) {
                 ArrayNumberValue *value = new ArrayNumberValue;
                 value->type = ARRAY_NUMBER;
                 value->array = array;
+                value->index = index;
                 return value;
             } else {
                 error("Nieprawidłowy indeks '" + to_string(index) +
@@ -60,7 +61,7 @@ ArrayNumberValue *getValue(string identifier, long index) {
 ArrayPointerValue *getValue(string arrayIdentifier, string indexIdentifier) {
     if (getSymbolTable()->variableDeclared(arrayIdentifier)) {
         Variable *variable = getSymbolTable()->getVariable(arrayIdentifier);
-        if (variable->varType == ARR) {
+        if (variable->varType == ARRAY) {
             PointerValue *indexValue = getValue(indexIdentifier);
             if (indexValue) {
                 ValueVariable *indexVariable = indexValue->variable;
@@ -68,6 +69,7 @@ ArrayPointerValue *getValue(string arrayIdentifier, string indexIdentifier) {
                     ArrayPointerValue *value = new ArrayPointerValue;
                     value->type = ARRAY_POINTER;
                     value->array = (ArrayVariable *)variable;
+                    value->indexVariable = indexVariable;
                     return value;
                 } else {
                     error("Użycie niezainicjalizowanej zmiennej '" +

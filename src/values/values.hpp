@@ -1,5 +1,5 @@
 #pragma once
-#include "symbols.hpp"
+#include "../symbols.hpp"
 
 using namespace std;
 
@@ -17,7 +17,6 @@ class NumberValue : public Value {
 
 class PointerValue : public Value {
    public:
-    // string variableName;
     ValueVariable* variable;
 };
 
@@ -25,8 +24,6 @@ class ArrayPointerValue : public Value {
    public:
     ArrayVariable* array;
     ValueVariable* indexVariable;
-    // string arrayName;
-    // string variableName;
 };
 
 class ArrayNumberValue : public Value {
@@ -38,4 +35,4 @@ class ArrayNumberValue : public Value {
 PointerValue* getValue(string identifier);
 NumberValue* getValue(long number);
 ArrayNumberValue* getValue(string identifier, long index);
-ArrayPointerValue* getValue(string arrayIdentifier, string indexIdenrifier);
+ArrayPointerValue* getValue(string arrayIdentifier, string indexIdentifier);

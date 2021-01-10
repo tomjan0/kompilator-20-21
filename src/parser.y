@@ -1,7 +1,7 @@
 %{
 #include "compiler.hpp"
 #include "symbols.hpp"
-#include "values.hpp"
+#include "values/values.hpp"
 
 #define YYDEBUG 1
 long int errors = 0;
@@ -124,7 +124,7 @@ identifier:
 
 int main(int argv, char* argc[]) {
     // yydebug = 1;
-    
+    test();
     if( argv != 3 ) {
         cerr << "Aby wywołać musisz wpisać: kompilator wejśce wyjście" << endl;
         return 1;

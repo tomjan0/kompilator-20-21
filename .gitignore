@@ -3,3 +3,7 @@
 /maszyna_wirtualna
 /tests
 /testy
+/src/parser.c
+/src/parser.h
+/src/lexer.c
+/src/compiler

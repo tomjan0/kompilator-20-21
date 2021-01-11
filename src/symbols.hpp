@@ -42,21 +42,22 @@ class ArrayVariable : public Variable {
     long length;
     long startId;
 
-    void initalizeId(long id) {
-        bool initialized = false;
+    bool isInitialized(long id) {
         for (long i = 0; i < initializedIds.size(); i++) {
             if (initializedIds.at(i) == id) {
-                initialized = true;
+                return true;
             }
         }
-        if (!initialized) {
+        return false;
+    }
+
+    void initalizeId(long id) {
+        if (!isInitialized(id)) {
             initializedIds.push_back(id);
         }
     }
 
-    long getMemoryId(long id) {
-        return memoryId + id - startId;
-    }
+    long getMemoryId(long id) { return memoryId + id - startId; }
 };
 
 /* Holds all registered symbols, both variables and constant values */
@@ -129,9 +130,7 @@ class SymbolTable {
         return (Variable*)getSymbol(identifier);
     }
 
-    long getTempMemoryId() {
-        return occupiedMemory;
-    }
+    long getTempMemoryId() { return occupiedMemory; }
 };
 
 SymbolTable* getSymbolTable();

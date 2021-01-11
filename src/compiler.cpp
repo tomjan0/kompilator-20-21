@@ -3,7 +3,7 @@
 vector<string> commands;
 string output_filename;
 ofstream file;
-bool debug = true;
+bool debug = false;
 
 void test() {}
 
@@ -65,75 +65,32 @@ vector<string> tempConstToRegister(long value, Register reg) {
     return instructions;
 }
 
-void read(Value* value) {
-    vector<string> readInstructions;
-    Register mainReg = Registers::A;
-    switch (value->type) {
-        case POINTER: {
-            auto pointerValue = (PointerValue*)value;
-            pointerValue->variable->initialized = true;
-            auto genInstructions = generateNumberInRegister(
-                pointerValue->variable->memoryId, mainReg);
-
-            concatStringsVectors(&readInstructions, &genInstructions);
-            break;
-        }
-        case ARRAY_NUMBER: {
-            auto arrayNumberValue = (ArrayNumberValue*)value;
-            arrayNumberValue->array->initalizeId(arrayNumberValue->index);
-            auto genInstructions = generateNumberInRegister(
-                arrayNumberValue->array->getMemoryId(arrayNumberValue->index),
-                mainReg);
-
-            concatStringsVectors(&readInstructions, &genInstructions);
-            break;
-        }
-        case ARRAY_POINTER: {
-            auto arrayPointerValue = (ArrayPointerValue*)value;
-            auto genInstructions = dynamicArrayPositionToRegister(
-                arrayPointerValue->array, arrayPointerValue->indexVariable,
-                mainReg);
-            concatStringsVectors(&readInstructions, &genInstructions);
-            break;
-        }
-        default:
-            break;
-    }
-
-    readInstructions.push_back(Instructions::GET(mainReg));
-    // TODO its only for tests now
-    concatStringsVectors(&commands, &readInstructions);
-}
-
-void write(Value* value) {
-    vector<string> readInstructions;
-    Register mainReg = Registers::A;
+vector<string> valueAdressToRegister(Value* value, Register mainReg) {
+    vector<string> instructions;
     switch (value->type) {
         case NUMBER: {
             auto numberValue = (NumberValue*)value;
             auto genInstructions =
                 tempConstToRegister(numberValue->number, mainReg);
 
-            concatStringsVectors(&readInstructions, &genInstructions);
+            concatStringsVectors(&instructions, &genInstructions);
             break;
         }
         case POINTER: {
             auto pointerValue = (PointerValue*)value;
-            pointerValue->variable->initialized = true;
             auto genInstructions = generateNumberInRegister(
                 pointerValue->variable->memoryId, mainReg);
 
-            concatStringsVectors(&readInstructions, &genInstructions);
+            concatStringsVectors(&instructions, &genInstructions);
             break;
         }
         case ARRAY_NUMBER: {
             auto arrayNumberValue = (ArrayNumberValue*)value;
-            arrayNumberValue->array->initalizeId(arrayNumberValue->index);
             auto genInstructions = generateNumberInRegister(
                 arrayNumberValue->array->getMemoryId(arrayNumberValue->index),
                 mainReg);
 
-            concatStringsVectors(&readInstructions, &genInstructions);
+            concatStringsVectors(&instructions, &genInstructions);
             break;
         }
         case ARRAY_POINTER: {
@@ -141,16 +98,57 @@ void write(Value* value) {
             auto genInstructions = dynamicArrayPositionToRegister(
                 arrayPointerValue->array, arrayPointerValue->indexVariable,
                 mainReg);
-            concatStringsVectors(&readInstructions, &genInstructions);
+            concatStringsVectors(&instructions, &genInstructions);
             break;
         }
         default:
             break;
     }
+    return instructions;
+}
 
-    readInstructions.push_back(Instructions::PUT(mainReg));
+void read(Value* value) {
+    vector<string> readInstructions =
+        valueAdressToRegister(value, Registers::A);
+    readInstructions.push_back(Instructions::GET(Registers::A));
+
+    value->initialize();
     // TODO its only for tests now
     concatStringsVectors(&commands, &readInstructions);
+}
+
+void write(Value* value) {
+    if (value->isInitialized()) {
+        vector<string> writeInstructions =
+            valueAdressToRegister(value, Registers::A);
+        writeInstructions.push_back(Instructions::PUT(Registers::A));
+
+        // TODO its only for tests now
+        concatStringsVectors(&commands, &writeInstructions);
+    } else {
+        error("Użycie niezainicializowanej zmiennej " + value->toString());
+    }
+}
+
+void assign(Value* identifierValue, Expression* expression) {
+    string idName;
+    switch (identifierValue->type) {
+        case POINTER:
+            idName = "POINTER";
+            break;
+        case ARRAY_NUMBER:
+            idName = "ARRAY_NUMBER";
+            break;
+        case ARRAY_POINTER:
+            idName = "ARRAY_POINTER";
+            break;
+        default:
+            break;
+    }
+    cout << identifierValue->toString()
+         << " := " << expression->left->toString() << " " << expression->type
+         << " " << (expression->right ? expression->right->toString() : "")
+         << endl;
 }
 
 void printCommands() {

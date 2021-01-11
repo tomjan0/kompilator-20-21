@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "values/values.hpp"
+#include "expressions/expressions.hpp"
 #include "compiler.hpp"
 #include "parser.h"
 

@@ -84,3 +84,29 @@ ArrayPointerValue *getValue(string arrayIdentifier, string indexIdentifier) {
     }
     return nullptr;
 }
+
+bool checkValuesInitialization(Value *value) {
+    if (value->isInitialized()) {
+        return true;
+    } else {
+        valueNotInitialized(value);
+    }
+    return false;
+}
+
+bool checkValuesInitialization(Value *left, Value *right) {
+    if (left->isInitialized()) {
+        if (right->isInitialized()) {
+            return true;
+        } else {
+            valueNotInitialized(right);
+        }
+    } else {
+        valueNotInitialized(left);
+    }
+    return false;
+}
+
+void valueNotInitialized(Value *value) {
+    error("Użycie niezainicjalizowanej zmiennej " + value->toString());
+}

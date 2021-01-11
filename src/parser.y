@@ -2,15 +2,14 @@
 #include "compiler.hpp"
 #include "symbols.hpp"
 #include "values/values.hpp"
+#include "expressions/expressions.hpp"
 
 #define YYDEBUG 1
-long int errors = 0;
-
-
+long errors = 0;
 
 extern int yylex();
 extern int yylineno;
-extern FILE *yyin;
+extern FILE* yyin;
 int yyerror(const string str);
 %}
 
@@ -19,7 +18,9 @@ int yyerror(const string str);
 %union {
     std::string *pidentifier;
     long num;
-    Value *value;
+    Value* value;
+    Expression* expression;
+    vector<string>* instructions;
 }
 
 %token DECLARE _BEGIN END
@@ -39,10 +40,10 @@ int yyerror(const string str);
 %type <value> value
 %type <value> identifier
 
-%type <variable> expression
+%type <expression> expression
 %type <cond> condition
-%type <command> command
-%type <command> commands
+%type <instructions> command
+%type <instructions> commands
 
 //Operators precedence
 %left PLUS MINUS
@@ -73,7 +74,7 @@ commands:
 
 command:
 
-      identifier ASSIGN expression';'                      {}
+      identifier ASSIGN expression';'                      { assign($1, $3); }
     | IF condition THEN commands ELSE commands ENDIF       {}
     | IF condition THEN commands ENDIF                     {}
     | WHILE condition DO commands ENDWHILE                 {}
@@ -88,12 +89,12 @@ command:
 
 expression:
 
-      value                                                {}
-    | value PLUS value                                     {}
-    | value MINUS value                                    {}
-    | value TIMES value                                    {}
-    | value DIV value                                      {}
-    | value MOD value                                      {}
+      value                                                { $$ = getSimpleExpression($1); }
+    | value PLUS value                                     { $$ = getAddExpression($1, $3); }
+    | value MINUS value                                    { $$ = getSubExpression($1, $3); }
+    | value TIMES value                                    { $$ = getMulExpression($1, $3); }
+    | value DIV value                                      { $$ = getDivExpression($1, $3); }
+    | value MOD value                                      { $$ = getModExpression($1, $3); }
     ;
 
 condition:
@@ -161,7 +162,9 @@ int main(int argv, char* argc[]) {
 // }
 
 int yyerror(string err) {
-    cout << "YYERROR Błąd! - linia " << yylineno << ": " << err << endl;
+    int line = yychar == YYEMPTY ? yylineno - 1 : yylineno;
+    cout<<yychar<<endl;
+    cout << "Błąd w lini " << line << ": " << err << endl;
     return 1;
     // exit(1);
 }
@@ -172,6 +175,7 @@ void error(string str) {
     cout << "Błąd w lini " << line << ": " << str << endl;
     // exit(1);
 }
+
 
 void error(string str, int lineno) {
     errors++;

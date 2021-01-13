@@ -80,10 +80,10 @@ command:
     | IF condition THEN commands ENDIF                     { $$ = ifThen($2, $4); }
     | WHILE condition DO commands ENDWHILE                 { $$ = whileDo($2, $4); }
     | REPEAT commands UNTIL condition';'                   { $$ = repeatUntil($2, $4); }
-    | FOR pidentifier FROM value TO value                  { scopeInvoke(); }
-      DO commands ENDFOR                                   { scopeRevoke(); }
-    | FOR pidentifier FROM value DOWNTO value              { scopeInvoke(); }
-      DO commands ENDFOR                                   { scopeRevoke(); }
+    | FOR pidentifier FROM value TO value                  { initFor(*$2, $4, $6); }
+      DO commands ENDFOR                                   { $$ = forTo(*$2, $4, $6, $9); }
+    | FOR pidentifier FROM value DOWNTO value              { initFor(*$2, $4, $6); }
+      DO commands ENDFOR                                   { $$ = forDownTo(*$2, $4, $6, $9); }
     | READ identifier';'                                   { $$ = read($2); }
     | WRITE value';'                                       { $$ = write($2); }
     ;

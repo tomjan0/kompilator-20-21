@@ -24,6 +24,9 @@ vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
                            vector<string>* elseCommands);
 vector<string>* whileDo(Condition* condition, vector<string>* commands);
 vector<string>* repeatUntil(vector<string>* commands, Condition* condition);
+void initFor(string identifier, Value* from, Value* to);
+vector<string>* forTo(string identifier, Value* from, Value* to, vector<string>* commands);
+vector<string>* forDownTo(string identifier, Value* from, Value* to, vector<string>* commands);
 
 vector<string>* mergeInstructions(vector<string>* commands,
                                   vector<string>* command);

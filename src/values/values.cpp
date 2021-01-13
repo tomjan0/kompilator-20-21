@@ -85,6 +85,15 @@ ArrayPointerValue *getValue(string arrayIdentifier, string indexIdentifier) {
     return nullptr;
 }
 
+void checkIterator(Value *value) {
+    if (value->type == POINTER) {
+        auto pointerValue = (PointerValue *)value;
+        if (pointerValue->variable->iterator) {
+            error("Iterator (" + pointerValue->variable->identifier + ") nie może być modyfikowany wewnątrz pętli");
+        }
+    }
+}
+
 bool checkValuesInitialization(Value *value) {
     if (value->isInitialized()) {
         return true;

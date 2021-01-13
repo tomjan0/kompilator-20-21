@@ -66,6 +66,7 @@ NumberValue* getValue(long number);
 ArrayNumberValue* getValue(string identifier, long index);
 ArrayPointerValue* getValue(string arrayIdentifier, string indexIdentifier);
 
+void checkIterator(Value *value);
 bool checkValuesInitialization(Value* value);
 bool checkValuesInitialization(Value* left, Value* right);
 void valueNotInitialized(Value* value);

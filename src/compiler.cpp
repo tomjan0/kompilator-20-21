@@ -5,6 +5,7 @@ string outputFilename;
 void setOutputFilename(string filename) { outputFilename = filename; }
 
 vector<string>* read(Value* value) {
+    checkIterator(value);
     auto readInstructions = new vector<string>;
     auto genInstructions = valueAdressToRegister(value, Registers::A);
     concatStringsVectors(readInstructions, &genInstructions);
@@ -48,6 +49,7 @@ vector<string>* assign(Value* identifierValue, Expression* expression) {
          << " " << (expression->right ? expression->right->toString() : "")
          << endl;
 
+    checkIterator(identifierValue);
     vector<string>* assignInstructions = new vector<string>;
     auto expressionInstructions =
         evalExpressionToRegister(expression, Registers::B);
@@ -120,11 +122,126 @@ vector<string>* repeatUntil(vector<string>* commands, Condition* condition) {
 
     concatStringsVectors(instructions, commands);
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(
-        Instructions::JZERO(Registers::A, commands->size() + 2));
+    instructions->push_back(Instructions::JZERO(Registers::A, 2));
     instructions->push_back(Instructions::JUMP(
         -(commands->size() + 1 + conditionInstructions.size())));
 
+    return instructions;
+}
+
+void initFor(string identifier, Value* from, Value* to) {
+    cout << "init for with " << identifier << endl;
+    getSymbolTable()->addIteratorVariable(identifier);
+    getSymbolTable()->addIteratorVariable("__" + identifier + "_to_value");
+}
+
+vector<string>* forTo(string identifier, Value* from, Value* to,
+                      vector<string>* commands) {
+    auto instructions = new vector<string>;
+    cout << "FOR" << endl;
+
+    // auto idVar = getSymbolTable()->getVariable(identifier);
+    auto idValue = getValue(identifier);
+    cout << "FOR 1" << endl;
+
+    auto genIdAddr = valueAdressToRegister(idValue, Registers::A);
+    cout << "FOR 2" << endl;
+
+    auto genIdVal = valueToRegister(idValue, Registers::B);
+    cout << "FOR 3" << endl;
+
+    auto genFrom = valueToRegister(from, Registers::B);
+
+    auto toValue = getValue("__" + identifier + "_to_value");
+    auto genToValueAdrr = valueAdressToRegister(toValue, Registers::A);
+    auto genTo = valueToRegister(to, Registers::B);
+    cout << "FOR 4" << endl;
+
+    auto condition = getLeqCondition(idValue, toValue);
+    cout << "FOR 5" << endl;
+
+    auto genCondition = evalConditionToRegister(condition, Registers::A);
+    cout << "FOR 6" << endl;
+
+    concatStringsVectors(instructions, &genIdAddr);
+    concatStringsVectors(instructions, &genFrom);
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+
+    concatStringsVectors(instructions, &genToValueAdrr);
+    concatStringsVectors(instructions, &genTo);
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+
+    concatStringsVectors(instructions, &genCondition);
+    instructions->push_back(Instructions::JZERO(
+        Registers::A,
+        commands->size() + genIdAddr.size() + genIdVal.size() + 4));
+    concatStringsVectors(instructions, commands);
+    concatStringsVectors(instructions, &genIdAddr);
+    concatStringsVectors(instructions, &genIdVal);
+    instructions->push_back(Instructions::INC(Registers::B));
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+    instructions->push_back(
+        Instructions::JUMP(-(2 + genIdVal.size() + genIdAddr.size() +
+                             commands->size() + 1 + genCondition.size())));
+
+    cout << "FOR 7" << endl;
+    idValue->variable->identifier = "";
+    toValue->variable->identifier = "";
+    return instructions;
+}
+
+vector<string>* forDownTo(string identifier, Value* from, Value* to,
+                          vector<string>* commands) {
+    auto instructions = new vector<string>;
+    cout << "FOR" << endl;
+
+    // auto idVar = getSymbolTable()->getVariable(identifier);
+    auto idValue = getValue(identifier);
+    cout << "FOR 1" << endl;
+
+    auto genIdAddr = valueAdressToRegister(idValue, Registers::A);
+    cout << "FOR 2" << endl;
+
+    auto genIdVal = valueToRegister(idValue, Registers::B);
+    cout << "FOR 3" << endl;
+
+    auto genFrom = valueToRegister(from, Registers::B);
+
+    auto toValue = getValue("__" + identifier + "_to_value");
+    auto genToValueAdrr = valueAdressToRegister(toValue, Registers::A);
+    auto genTo = valueToRegister(to, Registers::B);
+    cout << "FOR 4" << endl;
+
+    auto condition = getLeqCondition(toValue, toValue);
+    cout << "FOR 5" << endl;
+
+    auto genCondition = evalConditionToRegister(condition, Registers::A);
+    cout << "FOR 6" << endl;
+
+    concatStringsVectors(instructions, &genIdAddr);
+    concatStringsVectors(instructions, &genFrom);
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+
+    concatStringsVectors(instructions, &genToValueAdrr);
+    concatStringsVectors(instructions, &genTo);
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+
+    concatStringsVectors(instructions, &genCondition);
+    instructions->push_back(Instructions::JZERO(
+        Registers::A,
+        commands->size() + genIdAddr.size() + genIdVal.size() + 4));
+    concatStringsVectors(instructions, commands);
+    concatStringsVectors(instructions, &genIdAddr);
+    concatStringsVectors(instructions, &genIdVal);
+    instructions->push_back(Instructions::DEC(Registers::B));
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+    instructions->push_back(
+        Instructions::JUMP(-(2 + genIdVal.size() + genIdAddr.size() +
+                             commands->size() + 1 + genCondition.size())));
+
+    cout << "FOR 7" << endl;
+    idValue->variable->identifier = "";
+    toValue->variable->identifier = "";
     return instructions;
 }
 

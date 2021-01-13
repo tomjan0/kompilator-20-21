@@ -16,19 +16,17 @@
 
 using namespace std;
 
-void test();
-
 vector<string>* read(Value* value);
 vector<string>* write(Value* value);
 vector<string>* assign(Value* identifierValue, Expression* expression);
 vector<string>* ifThen(Condition* condition, vector<string>* commands);
 vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
                            vector<string>* elseCommands);
+vector<string>* whileDo(Condition* condition, vector<string>* commands);
+vector<string>* repeatUntil(vector<string>* commands, Condition* condition);
+
 vector<string>* mergeInstructions(vector<string>* commands,
                                   vector<string>* command);
 
-void printCommands();
-void writeCommands();
-void writeCommands(vector<string>* cmds);
-void set_output_filename(char*);
-void open_file();
+void writeCommands(vector<string>* commands);
+void setOutputFilename(string filename);

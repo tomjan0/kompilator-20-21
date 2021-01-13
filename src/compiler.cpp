@@ -1,15 +1,8 @@
 #include "compiler.hpp"
 
-vector<string> commands;
-string output_filename;
-ofstream file;
-bool debug = false;
+string outputFilename;
 
-void test() {}
-
-void set_output_filename(char* filename) { output_filename = filename; }
-
-void open_file() { file.open(output_filename); }
+void setOutputFilename(string filename) { outputFilename = filename; }
 
 vector<string>* read(Value* value) {
     auto readInstructions = new vector<string>;
@@ -103,32 +96,50 @@ vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
     return instructions;
 }
 
+vector<string>* whileDo(Condition* condition, vector<string>* commands) {
+    auto instructions = new vector<string>;
+
+    auto conditionInstructions =
+        evalConditionToRegister(condition, Registers::A);
+
+    concatStringsVectors(instructions, &conditionInstructions);
+    instructions->push_back(
+        Instructions::JZERO(Registers::A, commands->size() + 2));
+    concatStringsVectors(instructions, commands);
+    instructions->push_back(Instructions::JUMP(
+        -(commands->size() + 1 + conditionInstructions.size())));
+
+    return instructions;
+}
+
+vector<string>* repeatUntil(vector<string>* commands, Condition* condition) {
+    auto instructions = new vector<string>;
+
+    auto conditionInstructions =
+        evalConditionToRegister(condition, Registers::A);
+
+    concatStringsVectors(instructions, commands);
+    concatStringsVectors(instructions, &conditionInstructions);
+    instructions->push_back(
+        Instructions::JZERO(Registers::A, commands->size() + 2));
+    instructions->push_back(Instructions::JUMP(
+        -(commands->size() + 1 + conditionInstructions.size())));
+
+    return instructions;
+}
+
 vector<string>* mergeInstructions(vector<string>* commands,
                                   vector<string>* command) {
     concatStringsVectors(commands, command);
     return commands;
 }
 
-void printCommands() {
-    if (debug) {
-        for (int i = 0; i < commands.size(); i++) {
-            cout << commands.at(i) << endl;
-        }
+void writeCommands(vector<string>* commands) {
+    ofstream out;
+    out.open(outputFilename);
+    for (int i = 0; i < commands->size(); i++) {
+        out << commands->at(i) << endl;
     }
-}
-
-void writeCommands() {
-    for (int i = 0; i < commands.size(); i++) {
-        file << commands.at(i) << endl;
-    }
-    file << "HALT" << endl;
-    file.close();
-}
-
-void writeCommands(vector<string>* cmds) {
-    for (int i = 0; i < cmds->size(); i++) {
-        file << cmds->at(i) << endl;
-    }
-    file << "HALT" << endl;
-    file.close();
+    out << "HALT" << endl;
+    out.close();
 }

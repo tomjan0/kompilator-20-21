@@ -78,8 +78,8 @@ command:
       identifier ASSIGN expression';'                      { $$ = assign($1, $3); }
     | IF condition THEN commands ELSE commands ENDIF       { $$ = ifThenElse($2, $4, $6); }
     | IF condition THEN commands ENDIF                     { $$ = ifThen($2, $4); }
-    | WHILE condition DO commands ENDWHILE                 {}
-    | REPEAT commands UNTIL condition';'                   {}
+    | WHILE condition DO commands ENDWHILE                 { $$ = whileDo($2, $4); }
+    | REPEAT commands UNTIL condition';'                   { $$ = repeatUntil($2, $4); }
     | FOR pidentifier FROM value TO value                  { scopeInvoke(); }
       DO commands ENDFOR                                   { scopeRevoke(); }
     | FOR pidentifier FROM value DOWNTO value              { scopeInvoke(); }
@@ -125,10 +125,8 @@ identifier:
 
 
 int main(int argv, char* argc[]) {
-    // yydebug = 1;
-    test();
     if( argv != 3 ) {
-        cerr << "Aby wywołać musisz wpisać: kompilator wejśce wyjście" << endl;
+        cerr << "Wywołanie: kompilator <plik_źródłowy> <plik_wynikowy>" << endl;
         return 1;
     }
 
@@ -138,15 +136,13 @@ int main(int argv, char* argc[]) {
         return 1;
     }
 
-    set_output_filename(argc[2]);
-    open_file();
+    setOutputFilename(argc[2]);
     
-	yyparse();
-    
-    printCommands();
-        cout << "Udało się skompilować" << endl;
+    yyparse();
+      
+    cout << "Skompilowano do '" << argc[2] <<"'"<< endl;
 
-	return 0;
+    return 0;
 }
 
 int yyerror(string err) {

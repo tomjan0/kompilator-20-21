@@ -8,11 +8,11 @@
 #include <sstream>
 #include <vector>
 
+#include "conditions/conditions.hpp"
+#include "expressions/expressions.hpp"
 #include "symbols/symbols.hpp"
 #include "utils/utils.hpp"
 #include "values/values.hpp"
-#include "expressions/expressions.hpp"
-#include "conditions/conditions.hpp"
 
 using namespace std;
 
@@ -21,6 +21,9 @@ void test();
 vector<string>* read(Value* value);
 vector<string>* write(Value* value);
 vector<string>* assign(Value* identifierValue, Expression* expression);
+vector<string>* ifThen(Condition* condition, vector<string>* commands);
+vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
+                           vector<string>* elseCommands);
 vector<string>* mergeInstructions(vector<string>* commands,
                                   vector<string>* command);
 

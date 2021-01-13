@@ -75,10 +75,32 @@ vector<string>* assign(Value* identifierValue, Expression* expression) {
 vector<string>* ifThen(Condition* condition, vector<string>* commands) {
     auto instructions = new vector<string>;
 
-    auto conditionInstructions = evalConditionToRegister(condition, Registers::A);
+    auto conditionInstructions =
+        evalConditionToRegister(condition, Registers::A);
 
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(Instructions::JZERO(Registers::A, commands->size() + 1));
+    instructions->push_back(
+        Instructions::JZERO(Registers::A, commands->size() + 1));
+    concatStringsVectors(instructions, commands);
+
+    return instructions;
+}
+
+vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
+                           vector<string>* elseCommands) {
+    auto instructions = new vector<string>;
+
+    auto conditionInstructions =
+        evalConditionToRegister(condition, Registers::A);
+
+    concatStringsVectors(instructions, &conditionInstructions);
+    instructions->push_back(
+        Instructions::JZERO(Registers::A, thenCommands->size() + 2));
+    concatStringsVectors(instructions, thenCommands);
+    instructions->push_back(Instructions::JUMP(elseCommands->size() + 1));
+    concatStringsVectors(instructions, elseCommands);
+
+    return instructions;
 }
 
 vector<string>* mergeInstructions(vector<string>* commands,

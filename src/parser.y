@@ -76,7 +76,7 @@ commands:
 command:
 
       identifier ASSIGN expression';'                      { $$ = assign($1, $3); }
-    | IF condition THEN commands ELSE commands ENDIF       {}
+    | IF condition THEN commands ELSE commands ENDIF       { $$ = ifThenElse($2, $4, $6); }
     | IF condition THEN commands ENDIF                     { $$ = ifThen($2, $4); }
     | WHILE condition DO commands ENDWHILE                 {}
     | REPEAT commands UNTIL condition';'                   {}

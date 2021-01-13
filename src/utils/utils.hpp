@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "../symbols/symbols.hpp"
+
 using namespace std;
 
 class Register {
@@ -34,7 +36,7 @@ class Instructions {
 
     static string ADD(Register reg1, Register reg2);
     static string SUB(Register reg1, Register reg2);
-    
+
     static string RESET(Register reg);
     static string INC(Register reg);
     static string DEC(Register reg);
@@ -46,7 +48,8 @@ class Instructions {
     static string JODD(Register reg, long j);
 };
 
-
+string decToBin(long number);
 
 void concatStringsVectors(vector<string>* base, vector<string>* toConcat);
-string decToBin(long number);
+vector<string> generateNumberInRegister(long number, Register reg);
+vector<string> tempConstToRegister(long value, Register reg);

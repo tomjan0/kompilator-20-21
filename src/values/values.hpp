@@ -1,5 +1,7 @@
 #pragma once
-#include "../symbols.hpp"
+
+#include "../symbols/symbols.hpp"
+#include "../utils/utils.hpp"
 
 using namespace std;
 
@@ -67,3 +69,9 @@ ArrayPointerValue* getValue(string arrayIdentifier, string indexIdentifier);
 bool checkValuesInitialization(Value* value);
 bool checkValuesInitialization(Value* left, Value* right);
 void valueNotInitialized(Value* value);
+
+vector<string> dynamicArrayPositionToRegister(ArrayVariable* array,
+                                              ValueVariable* index,
+                                              Register reg);
+vector<string> valueAdressToRegister(Value* value, Register reg);
+vector<string> valueToRegister(Value* value, Register reg);

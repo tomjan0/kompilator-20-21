@@ -26,3 +26,5 @@ Expression* getSubExpression(Value* left, Value* right);
 Expression* getMulExpression(Value* left, Value* right);
 Expression* getDivExpression(Value* left, Value* right);
 Expression* getModExpression(Value* left, Value* right);
+
+vector<string> evalExpressionToRegister(Expression* expression, Register reg);

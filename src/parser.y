@@ -1,16 +1,16 @@
 %{
 #include "compiler.hpp"
-#include "symbols.hpp"
+#include "symbols/symbols.hpp"
 #include "values/values.hpp"
 #include "expressions/expressions.hpp"
-
-#define YYDEBUG 1
-long errors = 0;
+#include "conditions/conditions.hpp"
 
 extern int yylex();
 extern int yylineno;
 extern FILE* yyin;
 int yyerror(const string str);
+void error(string str);
+
 %}
 
 %define parse.error verbose
@@ -20,6 +20,7 @@ int yyerror(const string str);
     long num;
     Value* value;
     Expression* expression;
+    Condition* condition;
     vector<string>* instructions;
 }
 
@@ -41,7 +42,7 @@ int yyerror(const string str);
 %type <value> identifier
 
 %type <expression> expression
-%type <cond> condition
+%type <condition> condition
 %type <instructions> command
 %type <instructions> commands
 
@@ -54,8 +55,8 @@ int yyerror(const string str);
 %%
 program:
 
-      DECLARE declarations _BEGIN commands END             {}
-    | _BEGIN commands END                                  {}
+      DECLARE declarations _BEGIN commands END             { writeCommands($4); }
+    | _BEGIN commands END                                  { writeCommands($2); }
     ;
 
 declarations:
@@ -68,23 +69,23 @@ declarations:
 
 commands:
 
-      commands command                                     {}
-    | command                                              {}
+      commands command                                     { $$ = mergeInstructions($1, $2); }
+    | command                                              { $$ = $1; }
     ;
 
 command:
 
-      identifier ASSIGN expression';'                      { assign($1, $3); }
+      identifier ASSIGN expression';'                      { $$ = assign($1, $3); }
     | IF condition THEN commands ELSE commands ENDIF       {}
-    | IF condition THEN commands ENDIF                     {}
+    | IF condition THEN commands ENDIF                     { $$ = ifThen($2, $4); }
     | WHILE condition DO commands ENDWHILE                 {}
     | REPEAT commands UNTIL condition';'                   {}
     | FOR pidentifier FROM value TO value                  { scopeInvoke(); }
       DO commands ENDFOR                                   { scopeRevoke(); }
     | FOR pidentifier FROM value DOWNTO value              { scopeInvoke(); }
       DO commands ENDFOR                                   { scopeRevoke(); }
-    | READ identifier';'                                   { read($2); }
-    | WRITE value';'                                       { write($2); }
+    | READ identifier';'                                   { $$ = read($2); }
+    | WRITE value';'                                       { $$ = write($2); }
     ;
 
 expression:
@@ -99,12 +100,12 @@ expression:
 
 condition:
 
-      value EQ value                                       {}
-    | value NEQ value                                      {}
-    | value LE value                                       {}
-    | value GE value                                       {}
-    | value LEQ value                                      {}
-    | value GEQ value                                      {}
+      value EQ value                                       { $$ = getEqCondition($1, $3); }
+    | value NEQ value                                      { $$ = getNeqCondition($1, $3); }
+    | value LE value                                       { $$ = getLeCondition($1, $3); }
+    | value GE value                                       { $$ = getGeCondition($1, $3); }
+    | value LEQ value                                      { $$ = getLeqCondition($1, $3); }
+    | value GEQ value                                      { $$ = getGeqCondition($1, $3); }
     ;
 
 value:
@@ -133,7 +134,7 @@ int main(int argv, char* argc[]) {
 
     yyin = fopen(argc[1], "r");
     if (yyin == NULL) {
-        cout<<"Nie znaleziono podanego pliku"<<endl;
+        cerr<<"Nie znaleziono podanego pliku"<<endl;
         return 1;
     }
 
@@ -143,42 +144,20 @@ int main(int argv, char* argc[]) {
 	yyparse();
     
     printCommands();
-    writeCommands();
-   if(errors == 0) {
         cout << "Udało się skompilować" << endl;
-   } else {
-       cout << "Kompilacja nie powiodła się. Liczba błędów: "<<errors<<endl;
-   }
-//    print_sym();
-//    printAll();
-   //cout<<"hello"<<endl;
-  
+
 	return 0;
 }
-
-// int yyerror (char const *s)
-// {
-//   fprintf (stderr, "%s\n", s);
-// }
 
 int yyerror(string err) {
     int line = yychar == YYEMPTY ? yylineno - 1 : yylineno;
     cout<<yychar<<endl;
     cout << "Błąd w lini " << line << ": " << err << endl;
-    return 1;
-    // exit(1);
+    exit(EXIT_FAILURE);
 }
 
-void error(string str) {
-    errors++;
+void error(string err) {
     int line = yychar == 259 ? yylineno - 1 : yylineno;
-    cout << "Błąd w lini " << line << ": " << str << endl;
-    // exit(1);
-}
-
-
-void error(string str, int lineno) {
-    errors++;
-    cout << "YYLINENO Bład! - linia " << yylineno << ": " << str << endl;
-    // exit(1);
+    cerr << "Błąd w lini " << line << ": " << err << endl;
+    exit(EXIT_FAILURE);
 }

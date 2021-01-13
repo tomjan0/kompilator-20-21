@@ -135,8 +135,5 @@ class SymbolTable {
 
 SymbolTable* getSymbolTable();
 
-void error(string str);
-void error(string str, int lineno);
-
 void scopeInvoke();
 void scopeRevoke();

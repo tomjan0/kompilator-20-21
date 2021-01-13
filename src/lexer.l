@@ -8,6 +8,7 @@
 #include <vector>
 #include "values/values.hpp"
 #include "expressions/expressions.hpp"
+#include "conditions/conditions.hpp"
 #include "compiler.hpp"
 #include "parser.h"
 

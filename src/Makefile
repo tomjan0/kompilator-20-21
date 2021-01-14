@@ -12,14 +12,3 @@ compiler:
 
 clear: 
 	rm -f lexer.c lexer.o parser.c parser.h parser.o kompilator
-
-test:
-	./kompilator ../tests/test.imp ../tests/test.mr
-
-testvm: test vm
-
-testvmcln: test
-	../maszyna_wirtualna/maszyna-wirtualna-cln ../tests/test.mr	
-
-vm:
-	../maszyna_wirtualna/maszyna-wirtualna ../tests/test.mr

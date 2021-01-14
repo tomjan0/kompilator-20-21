@@ -1,7 +1,6 @@
 #include "compiler.hpp"
 
 string outputFilename;
-
 void setOutputFilename(string filename) { outputFilename = filename; }
 
 vector<string>* read(Value* value) {
@@ -135,11 +134,11 @@ vector<string>* forTo(string identifier, Value* from, Value* to, vector<string>*
     auto fromValueToB = valueToRegister(from, Registers::B);
 
     concatStringsVectors(instructions, &iteratorAddressToA);                   // reg a = id addr
-    concatStringsVectors(instructions, &fromValueToB);                              // reg b = from
+    concatStringsVectors(instructions, &fromValueToB);                         // reg b = from
     instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = from
 
     concatStringsVectors(instructions,
-                         &copyAddressToA);       // reg a = copy addr
+                         &copyAddressToA);            // reg a = copy addr
     concatStringsVectors(instructions, &toValueToB);  // reg b = to
     instructions->push_back(Instructions::INC(Registers::B));
     instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // to_copy = to + 1
@@ -193,13 +192,13 @@ vector<string>* forDownTo(string identifier, Value* from, Value* downto, vector<
     auto fromValueToB = valueToRegister(from, Registers::B);
 
     concatStringsVectors(instructions, &iteratorAddressToA);                   // reg a = id addr
-    concatStringsVectors(instructions, &fromValueToB);                              // reg b = from
+    concatStringsVectors(instructions, &fromValueToB);                         // reg b = from
     instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = from
 
     concatStringsVectors(instructions,
-                         &copyAddressToA);       // reg a = to_copy addr
-    concatStringsVectors(instructions, &downtoValueToB);  // reg b = to
-    instructions->push_back(Instructions::INC(Registers::B));
+                         &copyAddressToA);                                     // reg a = to_copy addr
+    concatStringsVectors(instructions, &downtoValueToB);                       // reg b = to
+    instructions->push_back(Instructions::INC(Registers::B));                  // reg b++
     instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // to_copy = to + 1
 
     // loop start ----------------------------
@@ -213,9 +212,9 @@ vector<string>* forDownTo(string identifier, Value* from, Value* downto, vector<
                                               Registers::B));  // reg a = reg a - reg b = to_copy - (id + 1)
 
     instructions->push_back(
-        Instructions::JZERO(Registers::A, 2));  // if to_copy - (id + 1) = 0 then its good, so skip jump DOLICZYĆ
+        Instructions::JZERO(Registers::A, 2));  // if to_copy - (id + 1) = 0 then its good, so skip jump
 
-    instructions->push_back(Instructions::JUMP(commands->size() + iteratorAddressToA.size() + 4 + 1));
+    instructions->push_back(Instructions::JUMP(commands->size() + iteratorAddressToA.size() + 4 + 2));
 
     concatStringsVectors(instructions, commands);  // loop body
 
@@ -223,11 +222,13 @@ vector<string>* forDownTo(string identifier, Value* from, Value* downto, vector<
 
     instructions->push_back(Instructions::LOAD(Registers::B, Registers::A));  // reg b = id
 
+    instructions->push_back(Instructions::JZERO(Registers::B, 4));  // check if id is 0, since we can't go -1
+
     instructions->push_back(Instructions::DEC(Registers::B));  // reg b = id - 1
 
     instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = reg b = id + 1
 
-    instructions->push_back(Instructions::JUMP(-3 - iteratorAddressToA.size() - commands->size() - 4 -
+    instructions->push_back(Instructions::JUMP(-4 - iteratorAddressToA.size() - commands->size() - 4 -
                                                iteratorValueToB.size() - copyValueToA.size()));  // jump to loop start
     // loop end --------------------------
 

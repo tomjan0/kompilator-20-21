@@ -5,9 +5,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "../utils/utils.hpp"
 
 using namespace std;
-
 void error(string str);
 
 enum SymbolType { VAR, CONST };
@@ -43,7 +43,7 @@ class ArrayVariable : public Variable {
     long startId;
 
     bool isInitialized(long id) {
-        for (long i = 0; i < initializedIds.size(); i++) {
+        for (vector<string>::size_type i = 0; i < initializedIds.size(); i++) {
             if (initializedIds.at(i) == id) {
                 return true;
             }
@@ -78,22 +78,25 @@ class SymbolTable {
             newVar->initialized = false;
             newVar->iterator = false;
             records->push_back(newVar);
-            // cout << "add value var -- "<<identifier<<" -- "<<newVar->type<< " ---- ";
-            // cout << records->back()->type<<endl;
-
-            cout << endl << "---- ADD VALUE VARIABLE ---" << endl;
-            cout << "  identifier: " << newVar->identifier << endl;
-            cout << "  memoryId: " << newVar->memoryId << endl << endl;
 
             occupiedMemory++;
-            cout << "  next id address after add " << occupiedMemory << endl;
-            cout << "--------------------------" << endl << endl;
+
+            if (DEBUG_MODE) {
+                cout << "---- DECLARE VALUE VARIABLE ----" << endl;
+                cout << "  identifier: " << newVar->identifier << endl;
+                cout << "  memoryId: " << newVar->memoryId << endl << endl;
+                cout << "  next id address after add " << occupiedMemory << endl;
+                cout << "--------------------------------" << endl << endl << endl;
+            }
         } else {
             error("Zmienna '" + identifier + "' została już zadeklarowana");
         }
     }
 
     void addIteratorVariable(string identifier) {
+        if (DEBUG_MODE) {
+            cout << endl << "           (FOR LOOP)           " << endl;
+        }
         addValueVariable(identifier);
         auto iterator = ((ValueVariable*)getVariable(identifier));
         iterator->initialized = true;
@@ -112,15 +115,17 @@ class SymbolTable {
                 newVar->varType = ARRAY;
                 records->push_back(newVar);
 
-                cout << endl << "---- ADD ARRAY VARIABLE ---" << endl;
-                cout << "  identifier: " << newVar->identifier << endl;
-                cout << "  memoryId: " << newVar->memoryId << endl;
-                cout << "  startId: " << newVar->startId << endl;
-                cout << "  length: " << newVar->length << endl << endl;
-
                 occupiedMemory += newVar->length;
-                cout << "  next id address after add " << occupiedMemory << endl;
-                cout << "--------------------------" << endl << endl;
+
+                if (DEBUG_MODE) {
+                    cout << endl << "---- DECLARE ARRAY VARIABLE ----" << endl;
+                    cout << "  identifier: " << newVar->identifier << endl;
+                    cout << "  memoryId: " << newVar->memoryId << endl;
+                    cout << "  startId: " << newVar->startId << endl;
+                    cout << "  length: " << newVar->length << endl << endl;
+                    cout << "  next id address after add " << occupiedMemory << endl;
+                    cout << "--------------------------------" << endl << endl;
+                }
             } else {
                 error("Nieprawiłowy zakres tablicy '" + identifier + "'");
             }
@@ -130,22 +135,8 @@ class SymbolTable {
     }
 
     long getSymbolIdx(string identifier) {
-        // cout << "READ "<<identifier<<endl;
-        // cout << "VEC SIZE "<<records->size()<<endl;
-        long i = 0;
-        // for(auto record: records) {
-        //     cout<<record->identifier<<" "<<i<<endl;
-
-        //     if(record->identifier == identifier) {
-        //         cout<< "HELLLO"<<endl;
-        //         return i;
-        //     }
-        //     i++;
-        // }
-        for (vector<string>::size_type i = 0; i != records->size(); i++) {
-            // cout<<"i: "<<i<<endl;
+        for (vector<string>::size_type i = 0; i < records->size(); i++) {
             if (records->at(i)->identifier == identifier) {
-                // cout<<" i 2: "<<i<<endl;
                 return i;
             }
         }
@@ -155,13 +146,7 @@ class SymbolTable {
     bool symbolDeclared(string identifier) { return getSymbolIdx(identifier) >= 0; }
 
     bool variableDeclared(string identifier) {
-        // cout << "LOKING FOR " << identifier << " ---- ";
         long id = getSymbolIdx(identifier);
-        // cout << "FOUND " << id << " ---- ";
-        // cout << "TYPE " << records->at(id)->type << "----" <<endl;
-        // if (id >= 0 && records->at(id)->type == VAR) {
-        // cout << "CHECK TRUE " << endl;
-        // }
         return id >= 0 && records->at(id)->type == VAR;
     }
 
@@ -176,6 +161,3 @@ class SymbolTable {
 };
 
 SymbolTable* getSymbolTable();
-
-void scopeInvoke();
-void scopeRevoke();

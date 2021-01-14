@@ -1,4 +1,4 @@
-gcc = g++ -std=c++17 
+gcc = g++ -std=c++17 -Wall --pedantic
 
 all:	clear compiler
 

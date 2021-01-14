@@ -5,10 +5,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#define DEBUG_MODE false
+#define DEBUG_MODE true
 
 #include "../symbols/symbols.hpp"
-
 
 using namespace std;
 

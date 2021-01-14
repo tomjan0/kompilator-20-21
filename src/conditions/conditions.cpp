@@ -7,29 +7,17 @@ Condition* getCondition(ConditionType type, Value* left, Value* right) {
     return nullptr;
 }
 
-Condition* getEqCondition(Value* left, Value* right) {
-    return getCondition(COND_EQ, left, right);
-}
-Condition* getNeqCondition(Value* left, Value* right) {
-    return getCondition(COND_NEQ, left, right);
-}
-Condition* getLeCondition(Value* left, Value* right) {
-    return getCondition(COND_LE, left, right);
-}
-Condition* getGeCondition(Value* left, Value* right) {
-    return getCondition(COND_GE, left, right);
-}
-Condition* getLeqCondition(Value* left, Value* right) {
-    return getCondition(COND_LEQ, left, right);
-}
-Condition* getGeqCondition(Value* left, Value* right) {
-    return getCondition(COND_GEQ, left, right);
-}
+Condition* getEqCondition(Value* left, Value* right) { return getCondition(COND_EQ, left, right); }
+Condition* getNeqCondition(Value* left, Value* right) { return getCondition(COND_NEQ, left, right); }
+Condition* getLeCondition(Value* left, Value* right) { return getCondition(COND_LE, left, right); }
+Condition* getGeCondition(Value* left, Value* right) { return getCondition(COND_GE, left, right); }
+Condition* getLeqCondition(Value* left, Value* right) { return getCondition(COND_LEQ, left, right); }
+Condition* getGeqCondition(Value* left, Value* right) { return getCondition(COND_GEQ, left, right); }
 
 vector<string> evalConditionToRegister(Condition* condition, Register reg) {
     vector<string> instructions;
-    if (condition->type == COND_GE || condition->type == COND_GEQ ||
-        condition->type == COND_LE || condition->type == COND_LEQ) {
+    if (condition->type == COND_GE || condition->type == COND_GEQ || condition->type == COND_LE ||
+        condition->type == COND_LEQ) {
         auto left = condition->left;
         auto right = condition->right;
 
@@ -59,8 +47,7 @@ vector<string> evalConditionToRegister(Condition* condition, Register reg) {
         condition->type = COND_EQ;
 
         concatStringsVectors(&instructions, &leftGEQright);
-        instructions.push_back(
-            Instructions::JZERO(reg, leftLEQright.size() + 3));
+        instructions.push_back(Instructions::JZERO(reg, leftLEQright.size() + 3));
         concatStringsVectors(&instructions, &leftLEQright);
         instructions.push_back(Instructions::JZERO(reg, 2));
         instructions.push_back(Instructions::JUMP(2));

@@ -22,5 +22,4 @@ Condition* getGeCondition(Value* left, Value* right);
 Condition* getLeqCondition(Value* left, Value* right);
 Condition* getGeqCondition(Value* left, Value* right);
 
-
 vector<string> evalConditionToRegister(Condition* condition, Register reg);

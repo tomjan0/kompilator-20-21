@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 #include "../utils/utils.hpp"
 
 using namespace std;
@@ -43,7 +44,7 @@ class ArrayVariable : public Variable {
     long startId;
 
     bool isInitialized(long id) {
-        for (vector<string>::size_type i = 0; i < initializedIds.size(); i++) {
+        for (vector<long>::size_type i = 0; i < initializedIds.size(); i++) {
             if (initializedIds.at(i) == id) {
                 return true;
             }
@@ -84,8 +85,7 @@ class SymbolTable {
             if (DEBUG_MODE) {
                 cout << "---- DECLARE VALUE VARIABLE ----" << endl;
                 cout << "  identifier: " << newVar->identifier << endl;
-                cout << "  memoryId: " << newVar->memoryId << endl << endl;
-                cout << "  next id address after add " << occupiedMemory << endl;
+                cout << "  memoryId: " << newVar->memoryId << endl;
                 cout << "--------------------------------" << endl << endl << endl;
             }
         } else {
@@ -95,7 +95,7 @@ class SymbolTable {
 
     void addIteratorVariable(string identifier) {
         if (DEBUG_MODE) {
-            cout << endl << "           (FOR LOOP)           " << endl;
+            cout << "           (FOR LOOP)           " << endl;
         }
         addValueVariable(identifier);
         auto iterator = ((ValueVariable*)getVariable(identifier));
@@ -122,8 +122,7 @@ class SymbolTable {
                     cout << "  identifier: " << newVar->identifier << endl;
                     cout << "  memoryId: " << newVar->memoryId << endl;
                     cout << "  startId: " << newVar->startId << endl;
-                    cout << "  length: " << newVar->length << endl << endl;
-                    cout << "  next id address after add " << occupiedMemory << endl;
+                    cout << "  length: " << newVar->length << endl;
                     cout << "--------------------------------" << endl << endl;
                 }
             } else {
@@ -135,7 +134,7 @@ class SymbolTable {
     }
 
     long getSymbolIdx(string identifier) {
-        for (vector<string>::size_type i = 0; i < records->size(); i++) {
+        for (vector<Symbol*>::size_type i = 0; i < records->size(); i++) {
             if (records->at(i)->identifier == identifier) {
                 return i;
             }

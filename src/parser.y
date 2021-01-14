@@ -36,9 +36,6 @@ void error(string str);
 %token <pidentifier> pidentifier
 %token <num> num
 
-// %type <variable> value
-// %type <variable> identifier
-
 %type <value> value
 %type <value> identifier
 
@@ -47,7 +44,7 @@ void error(string str);
 %type <instructions> command
 %type <instructions> commands
 
-//Operators precedence
+// Operators precedence
 %left PLUS MINUS
 %left TIMES DIV MOD      
 
@@ -81,9 +78,9 @@ command:
     | IF condition THEN commands ENDIF                     { $$ = ifThen($2, $4); }
     | WHILE condition DO commands ENDWHILE                 { $$ = whileDo($2, $4); }
     | REPEAT commands UNTIL condition';'                   { $$ = repeatUntil($2, $4); }
-    | FOR pidentifier FROM value TO value                  { initFor(*$2, $4, $6); }
+    | FOR pidentifier FROM value TO value                  { initFor(*$2); }
       DO commands ENDFOR                                   { $$ = forTo(*$2, $4, $6, $9); }
-    | FOR pidentifier FROM value DOWNTO value              { initFor(*$2, $4, $6); }
+    | FOR pidentifier FROM value DOWNTO value              { initFor(*$2); }
       DO commands ENDFOR                                   { $$ = forDownTo(*$2, $4, $6, $9); }
     | READ identifier';'                                   { $$ = read($2); }
     | WRITE value';'                                       { $$ = write($2); }
@@ -133,23 +130,19 @@ int main(int argv, char* argc[]) {
 
     yyin = fopen(argc[1], "r");
     if (yyin == NULL) {
-        cerr<<"Nie znaleziono podanego pliku"<<endl;
+        cerr << "Nie znaleziono podanego pliku" << endl;
         return 1;
     }
 
     setOutputFilename(argc[2]);
-    
     yyparse();
-      
-    cout << "Skompilowano do '" << argc[2] <<"'"<< endl;
+    cout << "Skompilowano '" << argc[1] << "' do '" << argc[2] << "'" << endl;
 
     return 0;
 }
 
 int yyerror(string err) {
-    int line = yychar == YYEMPTY ? yylineno - 1 : yylineno;
-    cout<<yychar<<endl;
-    cout << "Błąd w lini " << line << ": " << err << endl;
+    cerr << "Błąd w lini " << yylineno << ": " << err << endl;
     exit(EXIT_FAILURE);
 }
 

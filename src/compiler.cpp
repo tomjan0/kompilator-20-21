@@ -117,8 +117,7 @@ vector<string>* repeatUntil(vector<string>* commands, Condition* condition) {
 
     concatStringsVectors(instructions, commands);
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(Instructions::JZERO(Registers::A, 2));
-    instructions->push_back(Instructions::JUMP(-(commands->size() + 1 + conditionInstructions.size())));
+    instructions->push_back(Instructions::JZERO(Registers::A, -(commands->size() + conditionInstructions.size())));
 
     return instructions;
 }

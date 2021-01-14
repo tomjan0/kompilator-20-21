@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#define DEBUG_MODE true
+#define DEBUG_MODE false
 
 #include "../symbols/symbols.hpp"
 

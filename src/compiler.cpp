@@ -44,24 +44,19 @@ vector<string>* assign(Value* identifierValue, Expression* expression) {
         default:
             break;
     }
-    cout << identifierValue->toString()
-         << " := " << expression->left->toString() << " " << expression->type
-         << " " << (expression->right ? expression->right->toString() : "")
-         << endl;
+    cout << identifierValue->toString() << " := " << expression->left->toString() << " " << expression->type << " "
+         << (expression->right ? expression->right->toString() : "") << endl;
 
     checkIterator(identifierValue);
     vector<string>* assignInstructions = new vector<string>;
-    auto expressionInstructions =
-        evalExpressionToRegister(expression, Registers::B);
-    auto identifierInstructions =
-        valueAdressToRegister(identifierValue, Registers::A);
+    auto expressionInstructions = evalExpressionToRegister(expression, Registers::B);
+    auto identifierInstructions = valueAdressToRegister(identifierValue, Registers::A);
 
     // load expression first to avoid overwriting registers
     concatStringsVectors(assignInstructions, &expressionInstructions);
     concatStringsVectors(assignInstructions, &identifierInstructions);
 
-    assignInstructions->push_back(
-        Instructions::STORE(Registers::B, Registers::A));
+    assignInstructions->push_back(Instructions::STORE(Registers::B, Registers::A));
     identifierValue->initialize();
 
     return assignInstructions;
@@ -70,27 +65,22 @@ vector<string>* assign(Value* identifierValue, Expression* expression) {
 vector<string>* ifThen(Condition* condition, vector<string>* commands) {
     auto instructions = new vector<string>;
 
-    auto conditionInstructions =
-        evalConditionToRegister(condition, Registers::A);
+    auto conditionInstructions = evalConditionToRegister(condition, Registers::A);
 
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(
-        Instructions::JZERO(Registers::A, commands->size() + 1));
+    instructions->push_back(Instructions::JZERO(Registers::A, commands->size() + 1));
     concatStringsVectors(instructions, commands);
 
     return instructions;
 }
 
-vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
-                           vector<string>* elseCommands) {
+vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands, vector<string>* elseCommands) {
     auto instructions = new vector<string>;
 
-    auto conditionInstructions =
-        evalConditionToRegister(condition, Registers::A);
+    auto conditionInstructions = evalConditionToRegister(condition, Registers::A);
 
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(
-        Instructions::JZERO(Registers::A, thenCommands->size() + 2));
+    instructions->push_back(Instructions::JZERO(Registers::A, thenCommands->size() + 2));
     concatStringsVectors(instructions, thenCommands);
     instructions->push_back(Instructions::JUMP(elseCommands->size() + 1));
     concatStringsVectors(instructions, elseCommands);
@@ -101,15 +91,12 @@ vector<string>* ifThenElse(Condition* condition, vector<string>* thenCommands,
 vector<string>* whileDo(Condition* condition, vector<string>* commands) {
     auto instructions = new vector<string>;
 
-    auto conditionInstructions =
-        evalConditionToRegister(condition, Registers::A);
+    auto conditionInstructions = evalConditionToRegister(condition, Registers::A);
 
     concatStringsVectors(instructions, &conditionInstructions);
-    instructions->push_back(
-        Instructions::JZERO(Registers::A, commands->size() + 2));
+    instructions->push_back(Instructions::JZERO(Registers::A, commands->size() + 2));
     concatStringsVectors(instructions, commands);
-    instructions->push_back(Instructions::JUMP(
-        -(commands->size() + 1 + conditionInstructions.size())));
+    instructions->push_back(Instructions::JUMP(-(commands->size() + 1 + conditionInstructions.size())));
 
     return instructions;
 }
@@ -117,14 +104,12 @@ vector<string>* whileDo(Condition* condition, vector<string>* commands) {
 vector<string>* repeatUntil(vector<string>* commands, Condition* condition) {
     auto instructions = new vector<string>;
 
-    auto conditionInstructions =
-        evalConditionToRegister(condition, Registers::A);
+    auto conditionInstructions = evalConditionToRegister(condition, Registers::A);
 
     concatStringsVectors(instructions, commands);
     concatStringsVectors(instructions, &conditionInstructions);
     instructions->push_back(Instructions::JZERO(Registers::A, 2));
-    instructions->push_back(Instructions::JUMP(
-        -(commands->size() + 1 + conditionInstructions.size())));
+    instructions->push_back(Instructions::JUMP(-(commands->size() + 1 + conditionInstructions.size())));
 
     return instructions;
 }
@@ -135,118 +120,123 @@ void initFor(string identifier, Value* from, Value* to) {
     getSymbolTable()->addIteratorVariable("__" + identifier + "_to_value");
 }
 
-vector<string>* forTo(string identifier, Value* from, Value* to,
-                      vector<string>* commands) {
+vector<string>* forTo(string identifier, Value* from, Value* to, vector<string>* commands) {
     auto instructions = new vector<string>;
-    cout << "FOR" << endl;
 
-    // auto idVar = getSymbolTable()->getVariable(identifier);
-    auto idValue = getValue(identifier);
-    cout << "FOR 1" << endl;
+    auto iterator = getValue(identifier);
+    auto iteratorAddressToA = valueAdressToRegister(iterator, Registers::A);
+    auto iteratorValueToB = valueToRegister(iterator, Registers::B);
 
-    auto genIdAddr = valueAdressToRegister(idValue, Registers::A);
-    cout << "FOR 2" << endl;
+    auto copy = getValue("__" + identifier + "_to_value");
+    auto copyAddressToA = valueAdressToRegister(copy, Registers::A);
+    auto copyValueToA = valueToRegister(copy, ::Registers::A);
 
-    auto genIdVal = valueToRegister(idValue, Registers::B);
-    cout << "FOR 3" << endl;
+    auto toValueToB = valueToRegister(to, Registers::B);
+    auto fromValueToB = valueToRegister(from, Registers::B);
 
-    auto genFrom = valueToRegister(from, Registers::B);
+    concatStringsVectors(instructions, &iteratorAddressToA);                   // reg a = id addr
+    concatStringsVectors(instructions, &fromValueToB);                              // reg b = from
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = from
 
-    auto toValue = getValue("__" + identifier + "_to_value");
-    auto genToValueAdrr = valueAdressToRegister(toValue, Registers::A);
-    auto genTo = valueToRegister(to, Registers::B);
-    cout << "FOR 4" << endl;
-
-    auto condition = getLeqCondition(idValue, toValue);
-    cout << "FOR 5" << endl;
-
-    auto genCondition = evalConditionToRegister(condition, Registers::A);
-    cout << "FOR 6" << endl;
-
-    concatStringsVectors(instructions, &genIdAddr);
-    concatStringsVectors(instructions, &genFrom);
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
-
-    concatStringsVectors(instructions, &genToValueAdrr);
-    concatStringsVectors(instructions, &genTo);
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
-
-    concatStringsVectors(instructions, &genCondition);
-    instructions->push_back(Instructions::JZERO(
-        Registers::A,
-        commands->size() + genIdAddr.size() + genIdVal.size() + 4));
-    concatStringsVectors(instructions, commands);
-    concatStringsVectors(instructions, &genIdAddr);
-    concatStringsVectors(instructions, &genIdVal);
+    concatStringsVectors(instructions,
+                         &copyAddressToA);       // reg a = copy addr
+    concatStringsVectors(instructions, &toValueToB);  // reg b = to
     instructions->push_back(Instructions::INC(Registers::B));
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
-    instructions->push_back(
-        Instructions::JUMP(-(2 + genIdVal.size() + genIdAddr.size() +
-                             commands->size() + 1 + genCondition.size())));
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // to_copy = to + 1
 
-    cout << "FOR 7" << endl;
-    idValue->variable->identifier = "";
-    toValue->variable->identifier = "";
+    // loop start ----------------------------
+    concatStringsVectors(instructions, &copyValueToA);  // reg a = to_copy = to + 1
+
+    concatStringsVectors(instructions, &iteratorValueToB);  // reg b = id
+
+    instructions->push_back(Instructions::INC(Registers::B));  // reg b = id + 1 DOLICZĆ!!!!
+
+    instructions->push_back(Instructions::SUB(Registers::B,
+                                              Registers::A));  // reg b = reg b - reg a = (id + 1) - (to + 1)
+
+    instructions->push_back(
+        Instructions::JZERO(Registers::B, 2));  // if (id + 1) - (to + 1) = 0 then its good, so skip jump DOLICZYĆ
+
+    instructions->push_back(Instructions::JUMP(commands->size() + iteratorAddressToA.size() + 4 + 1));
+
+    concatStringsVectors(instructions, commands);  // loop body
+
+    concatStringsVectors(instructions, &iteratorAddressToA);  // reg a = id addr
+
+    instructions->push_back(Instructions::LOAD(Registers::B, Registers::A));  // reg b = id
+
+    instructions->push_back(Instructions::INC(Registers::B));  // reg b = id + 1
+
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = reg b = id + 1
+
+    instructions->push_back(Instructions::JUMP(-3 - iteratorAddressToA.size() - commands->size() - 4 -
+                                               iteratorValueToB.size() - copyValueToA.size()));  // jump to loop start
+    // loop end --------------------------
+
+    iterator->variable->identifier = "";
+    copy->variable->identifier = "";
     return instructions;
 }
 
-vector<string>* forDownTo(string identifier, Value* from, Value* to,
-                          vector<string>* commands) {
+vector<string>* forDownTo(string identifier, Value* from, Value* downto, vector<string>* commands) {
     auto instructions = new vector<string>;
-    cout << "FOR" << endl;
 
-    // auto idVar = getSymbolTable()->getVariable(identifier);
-    auto idValue = getValue(identifier);
-    cout << "FOR 1" << endl;
+    auto iterator = getValue(identifier);
+    auto iteratorAddressToA = valueAdressToRegister(iterator, Registers::A);
+    auto iteratorValueToB = valueToRegister(iterator, Registers::B);
 
-    auto genIdAddr = valueAdressToRegister(idValue, Registers::A);
-    cout << "FOR 2" << endl;
+    auto copy = getValue("__" + identifier + "_to_value");
+    auto copyAddressToA = valueAdressToRegister(copy, Registers::A);
+    auto copyValueToA = valueToRegister(copy, ::Registers::A);
 
-    auto genIdVal = valueToRegister(idValue, Registers::B);
-    cout << "FOR 3" << endl;
+    auto downtoValueToB = valueToRegister(downto, Registers::B);
+    auto fromValueToB = valueToRegister(from, Registers::B);
 
-    auto genFrom = valueToRegister(from, Registers::B);
+    concatStringsVectors(instructions, &iteratorAddressToA);                   // reg a = id addr
+    concatStringsVectors(instructions, &fromValueToB);                              // reg b = from
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = from
 
-    auto toValue = getValue("__" + identifier + "_to_value");
-    auto genToValueAdrr = valueAdressToRegister(toValue, Registers::A);
-    auto genTo = valueToRegister(to, Registers::B);
-    cout << "FOR 4" << endl;
+    concatStringsVectors(instructions,
+                         &copyAddressToA);       // reg a = to_copy addr
+    concatStringsVectors(instructions, &downtoValueToB);  // reg b = to
+    instructions->push_back(Instructions::INC(Registers::B));
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // to_copy = to + 1
 
-    auto condition = getLeqCondition(toValue, toValue);
-    cout << "FOR 5" << endl;
+    // loop start ----------------------------
+    concatStringsVectors(instructions, &copyValueToA);  // reg a = to_copy
 
-    auto genCondition = evalConditionToRegister(condition, Registers::A);
-    cout << "FOR 6" << endl;
+    concatStringsVectors(instructions, &iteratorValueToB);  // reg b = id
 
-    concatStringsVectors(instructions, &genIdAddr);
-    concatStringsVectors(instructions, &genFrom);
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+    instructions->push_back(Instructions::INC(Registers::B));  // reg b = id + 1 DOLICZĆ!!!!
 
-    concatStringsVectors(instructions, &genToValueAdrr);
-    concatStringsVectors(instructions, &genTo);
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
+    instructions->push_back(Instructions::SUB(Registers::A,
+                                              Registers::B));  // reg a = reg a - reg b = to_copy - (id + 1)
 
-    concatStringsVectors(instructions, &genCondition);
-    instructions->push_back(Instructions::JZERO(
-        Registers::A,
-        commands->size() + genIdAddr.size() + genIdVal.size() + 4));
-    concatStringsVectors(instructions, commands);
-    concatStringsVectors(instructions, &genIdAddr);
-    concatStringsVectors(instructions, &genIdVal);
-    instructions->push_back(Instructions::DEC(Registers::B));
-    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));
     instructions->push_back(
-        Instructions::JUMP(-(2 + genIdVal.size() + genIdAddr.size() +
-                             commands->size() + 1 + genCondition.size())));
+        Instructions::JZERO(Registers::A, 2));  // if to_copy - (id + 1) = 0 then its good, so skip jump DOLICZYĆ
 
-    cout << "FOR 7" << endl;
-    idValue->variable->identifier = "";
-    toValue->variable->identifier = "";
+    instructions->push_back(Instructions::JUMP(commands->size() + iteratorAddressToA.size() + 4 + 1));
+
+    concatStringsVectors(instructions, commands);  // loop body
+
+    concatStringsVectors(instructions, &iteratorAddressToA);  // reg a = id addr
+
+    instructions->push_back(Instructions::LOAD(Registers::B, Registers::A));  // reg b = id
+
+    instructions->push_back(Instructions::DEC(Registers::B));  // reg b = id - 1
+
+    instructions->push_back(Instructions::STORE(Registers::B, Registers::A));  // id = reg b = id + 1
+
+    instructions->push_back(Instructions::JUMP(-3 - iteratorAddressToA.size() - commands->size() - 4 -
+                                               iteratorValueToB.size() - copyValueToA.size()));  // jump to loop start
+    // loop end --------------------------
+
+    iterator->variable->identifier = "";
+    copy->variable->identifier = "";
     return instructions;
 }
 
-vector<string>* mergeInstructions(vector<string>* commands,
-                                  vector<string>* command) {
+vector<string>* mergeInstructions(vector<string>* commands, vector<string>* command) {
     concatStringsVectors(commands, command);
     return commands;
 }

@@ -25,11 +25,11 @@ class PointerValue : public Value {
    public:
     ValueVariable* variable;
     bool isInitialized() {
-        cout << "check ponter" << endl;
+        // cout << "check ponter" << endl;
         return variable->initialized;
     }
     void initialize() {
-        cout << "init pointer" << endl;
+        // cout << "init pointer" << endl;
         variable->initialized = true;
     }
     string toString() { return variable->identifier; };
@@ -40,11 +40,11 @@ class ArrayNumberValue : public Value {
     ArrayVariable* array;
     long index;
     bool isInitialized() {
-        cout << "check array number " << endl;
+        // cout << "check array number " << endl;
         return array->isInitialized(index);
     }
     void initialize() {
-        cout << "init array number " << endl;
+        // cout << "init array number " << endl;
         array->initalizeId(index);
     }
     string toString() {

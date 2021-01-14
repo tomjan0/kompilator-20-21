@@ -15,7 +15,7 @@
 %}
 
 IDENTIFIER              [_a-z]
-NUMBER                  [-]?([1-9][0-9]*|0)
+NUMBER                  [1-9][0-9]*|0
 MARK                    [\(\)\:\;,]
 
 %x COMMENT

@@ -131,9 +131,9 @@ vector<string> dynamicArrayPositionToRegister(ArrayVariable *array,
         generateNumberInRegister(array->startId, Registers::F);
 
     concatStringsVectors(&instructions, &genIndexMem);
+    instructions.push_back(Instructions::LOAD(reg, reg));
     concatStringsVectors(&instructions, &genArrayMem);
     concatStringsVectors(&instructions, &genArrayStart);
-    instructions.push_back(Instructions::LOAD(reg, reg));
     instructions.push_back(Instructions::ADD(reg, Registers::E));
     instructions.push_back(Instructions::SUB(reg, Registers::F));
 

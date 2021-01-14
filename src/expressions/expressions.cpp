@@ -48,19 +48,19 @@ vector<string> evalExpressionToRegister(Expression* expression, Register reg) {
         case EX_ADD: {
             auto leftInstructions = valueToRegister(expression->left, reg);
             auto rightInstructions =
-                valueToRegister(expression->right, Registers::F);
+                valueToRegister(expression->right, Registers::C);
             concatStringsVectors(&instructions, &leftInstructions);
             concatStringsVectors(&instructions, &rightInstructions);
-            instructions.push_back(Instructions::ADD(reg, Registers::F));
+            instructions.push_back(Instructions::ADD(reg, Registers::C));
             break;
         }
         case EX_SUB: {
             auto leftInstructions = valueToRegister(expression->left, reg);
             auto rightInstructions =
-                valueToRegister(expression->right, Registers::F);
+                valueToRegister(expression->right, Registers::C);
             concatStringsVectors(&instructions, &leftInstructions);
             concatStringsVectors(&instructions, &rightInstructions);
-            instructions.push_back(Instructions::SUB(reg, Registers::F));
+            instructions.push_back(Instructions::SUB(reg, Registers::C));
             break;
         }
         case EX_MUL: {

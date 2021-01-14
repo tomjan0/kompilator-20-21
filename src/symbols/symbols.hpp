@@ -11,7 +11,7 @@ using namespace std;
 void error(string str);
 
 enum SymbolType { VAR, CONST };
-enum VariableType { VAL, ARRAY};
+enum VariableType { VAL, ARRAY };
 
 /* Record of symbol table. Can be a variable or const */
 class Symbol {
@@ -63,11 +63,9 @@ class ArrayVariable : public Variable {
 /* Holds all registered symbols, both variables and constant values */
 class SymbolTable {
    public:
-    vector<Symbol*> *records;
+    vector<Symbol*>* records;
     long long int occupiedMemory;
-    SymbolTable() {
-        this->records = new vector<Symbol*>;
-    }
+    SymbolTable() { this->records = new vector<Symbol*>; }
 
     void addValueVariable(string identifier) {
         if (getSymbolIdx(identifier) == -1) {
@@ -80,9 +78,16 @@ class SymbolTable {
             newVar->initialized = false;
             newVar->iterator = false;
             records->push_back(newVar);
-            cout << "add value var -- "<<identifier<<" -- "<<newVar->type<< " ---- "; 
-            cout << records->back()->type<<endl;
+            // cout << "add value var -- "<<identifier<<" -- "<<newVar->type<< " ---- ";
+            // cout << records->back()->type<<endl;
+
+            cout << endl << "---- ADD VALUE VARIABLE ---" << endl;
+            cout << "  identifier: " << newVar->identifier << endl;
+            cout << "  memoryId: " << newVar->memoryId << endl << endl;
+
             occupiedMemory++;
+            cout << "  next id address after add " << occupiedMemory << endl;
+            cout << "--------------------------" << endl << endl;
         } else {
             error("Zmienna '" + identifier + "' została już zadeklarowana");
         }
@@ -107,7 +112,15 @@ class SymbolTable {
                 newVar->varType = ARRAY;
                 records->push_back(newVar);
 
+                cout << endl << "---- ADD ARRAY VARIABLE ---" << endl;
+                cout << "  identifier: " << newVar->identifier << endl;
+                cout << "  memoryId: " << newVar->memoryId << endl;
+                cout << "  startId: " << newVar->startId << endl;
+                cout << "  length: " << newVar->length << endl << endl;
+
                 occupiedMemory += newVar->length;
+                cout << "  next id address after add " << occupiedMemory << endl;
+                cout << "--------------------------" << endl << endl;
             } else {
                 error("Nieprawiłowy zakres tablicy '" + identifier + "'");
             }
@@ -117,12 +130,12 @@ class SymbolTable {
     }
 
     long getSymbolIdx(string identifier) {
-        cout << "READ "<<identifier<<endl;
-        cout << "VEC SIZE "<<records->size()<<endl;
-        long i =0;
+        // cout << "READ "<<identifier<<endl;
+        // cout << "VEC SIZE "<<records->size()<<endl;
+        long i = 0;
         // for(auto record: records) {
         //     cout<<record->identifier<<" "<<i<<endl;
-        
+
         //     if(record->identifier == identifier) {
         //         cout<< "HELLLO"<<endl;
         //         return i;
@@ -130,27 +143,25 @@ class SymbolTable {
         //     i++;
         // }
         for (vector<string>::size_type i = 0; i != records->size(); i++) {
-            cout<<"i: "<<i<<endl;
+            // cout<<"i: "<<i<<endl;
             if (records->at(i)->identifier == identifier) {
-                cout<<" i 2: "<<i<<endl;
+                // cout<<" i 2: "<<i<<endl;
                 return i;
             }
         }
         return -1;
     }
 
-    bool symbolDeclared(string identifier) {
-        return getSymbolIdx(identifier) >= 0;
-    }
+    bool symbolDeclared(string identifier) { return getSymbolIdx(identifier) >= 0; }
 
     bool variableDeclared(string identifier) {
-        cout << "LOKING FOR " << identifier << " ---- ";
+        // cout << "LOKING FOR " << identifier << " ---- ";
         long id = getSymbolIdx(identifier);
-        cout << "FOUND " << id << " ---- ";
+        // cout << "FOUND " << id << " ---- ";
         // cout << "TYPE " << records->at(id)->type << "----" <<endl;
-        if (id >= 0 && records->at(id)->type == VAR) {
-            cout << "CHECK TRUE " << endl;
-        }
+        // if (id >= 0 && records->at(id)->type == VAR) {
+        // cout << "CHECK TRUE " << endl;
+        // }
         return id >= 0 && records->at(id)->type == VAR;
     }
 
@@ -159,9 +170,7 @@ class SymbolTable {
         return id >= 0 ? records->at(id) : nullptr;
     }
 
-    Variable* getVariable(string identifier) {
-        return (Variable*)getSymbol(identifier);
-    }
+    Variable* getVariable(string identifier) { return (Variable*)getSymbol(identifier); }
 
     long getTempMemoryId() { return occupiedMemory; }
 };

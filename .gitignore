@@ -6,4 +6,4 @@
 /src/parser.c
 /src/parser.h
 /src/lexer.c
-/src/compiler
+/src/kompilator

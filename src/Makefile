@@ -1,4 +1,4 @@
-gcc = g++ -std=c++17 -Wall --pedantic
+gcc = g++ -std=c++17 -Wall
 
 all:	clear compiler
 
@@ -8,13 +8,13 @@ compiler:
 	$(gcc) lexer.c parser.c compiler.cpp\
 		   symbols/symbols.cpp  values/values.cpp \
 		   utils/utils.cpp expressions/expressions.cpp \
-		   conditions/conditions.cpp -o compiler
+		   conditions/conditions.cpp -o kompilator
 
 clear: 
-	rm -f lexer.c lexer.o parser.c parser.h parser.o compiler
+	rm -f lexer.c lexer.o parser.c parser.h parser.o kompilator
 
 test:
-	./compiler ../tests/test.imp ../tests/test.mr
+	./kompilator ../tests/test.imp ../tests/test.mr
 
 testvm: test vm
 
